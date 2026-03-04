@@ -7,8 +7,84 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.13"
+pytest = ">=9.0.2"
+poetry-core = "^2.3.1"
+flake8 = ">=7.3.0"
+black = ">=26.1.0"
+isort = ">=7.0.0"
+mypy = ">=1.19.1"
+pytest-cov = ">=7.0.0"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+linters = [
+    "flake8 (>=7.3.0,<8.0.0)",
+    "black (>=26.1.0,<27.0.0)",
+    "isort (>=7.0.0,<8.0.0)",
+    "mypy (>=1.19.1,<2.0.0)"
+]
+dev = [
+    "pytest (>=9.0.2,<10.0.0)",
+    "pytest-cov (>=7.0.0,<8.0.0)"
+]
+
+
+[tool.mypy]
+disallow_untyped_defs = true
+warn_return_any = true
+namespace_packages = true
+exclude = ["venv", "tests", ".venv"]
+mypy_path = "src"
+files = "*.py"
+
+
+[tool.black]
+line-length = 119
+skip-string-normalization = false
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | \.gitignore
+    | \.idea
+    | tests/
+).*$
+'''
+
+
+[tool.isort]
+line_length = 119
+skip = [
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".tox",
+    ".venv",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    ".gitignore",
+    ".idea"
+]
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+
+[tool.coverage.run]
+source = ["src"]
