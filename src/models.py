@@ -7,8 +7,9 @@ from typing import Union
 class Product:
     """Class for making products"""
 
-    __products_dict = dict()  # Storage only for this project, in big online-shops this must be replaced with DB or smth else
-
+    __products_dict: dict = (
+        dict()
+    )  # Storage only for this project, in big online-shops this must be replaced with DB or smth else
 
     def __init__(self, name: str, description: str, price: Union[float, int], quantity: int):
         """Initialization method"""
@@ -18,14 +19,12 @@ class Product:
         self.quantity = quantity
         Product.__products_dict[name] = self
 
-
     @property
-    def price(self):
+    def price(self) -> Union[float, int]:
         return self.__price
 
-
     @price.setter
-    def price(self, value):
+    def price(self, value: Union[float, int]) -> None:
         if value <= 0:
             print("Price cannot be less than or equal to 0")
             pass
@@ -41,15 +40,14 @@ If you are sure you want to reset the price to lower one, enter 'y', enter any o
         else:
             self.__price = value
 
-
     @classmethod
-    def new_product(cls, product_dict: dict):
+    def new_product(cls, product_dict: dict) -> "Product":
         """Class method for creating a new product object from dictionary"""
 
-        name = product_dict.get('name')
-        description = product_dict.get('description')
-        price = product_dict.get('price')
-        quantity = product_dict.get('quantity')
+        name = product_dict["name"]
+        description = product_dict["description"]
+        price = product_dict["price"]
+        quantity = product_dict["quantity"]
 
         if name in cls.__products_dict:
             existing_product = cls.__products_dict[name]
@@ -68,37 +66,33 @@ class Category:
     category_count = 0
     product_count = 0
 
-
-    def __init__(self, name: str, description: str, products: list[Product]):
+    def __init__(self, name: str, description: str, products: list[Product]) -> None:
         """Initialization method"""
         self.name = name
         self.description = description
         self.__products = products
-        # self.__products_dict = {p.name: p for p in products} # Storage only for this project, in big online-shops this string must be replaced with DB or smth else
 
         Category.category_count += 1
         Category.product_count += len(products)
 
-
-    def add_product(self, product: Product):
+    def add_product(self, product: Product) -> None:
         """Add product to category"""
 
         self.__products.append(product)
         Category.product_count += 1
 
-
     @property
-    def products(self) -> str:
+    def products(self) -> list[str]:
         """Getter for list of products in category"""
 
-        products_string = ""
+        products = []
         for product in self.__products:
-            products_string += f"{product.name}, {product.price} RUB, Stock: {product.quantity}.\n"
+            products.append(f"{product.name}, {product.price} RUB, Stock: {product.quantity}")
 
-        return products_string.strip()
+        return products
 
 
-def init_from_json(json_file: str) -> tuple[list[Product], list[Category]]:
+def init_from_json(json_file: str) -> list[Category]:
     """Initialization for objects from json file
     :param json_file: name of json file
     :return: all_products, all_categories — lists, access to products and categories is by using indices"""
@@ -106,42 +100,12 @@ def init_from_json(json_file: str) -> tuple[list[Product], list[Category]]:
     with open(json_file, "r", encoding="utf-8") as file:
         data = json.load(file)
 
-    all_products = []
     all_categories = []
 
     for category in data:
-        category_products = []
 
-        for product in category["products"]:
-
-            product = Product(
-                name=product["name"],
-                description=product["description"],
-                price=product["price"],
-                quantity=product["quantity"],
-            )
-
-            category_products.append(product)
-            all_products.append(product)
-
+        category_products = [Product.new_product(product) for product in category["products"]]
         category = Category(name=category["name"], description=category["description"], products=category_products)
-
         all_categories.append(category)
 
-    return all_products, all_categories
-
-
-
-
-# prod1 = Product("prod1", "descr1", 1, 100)
-# prod2 = Product("prod2", "descr2", 2, 200)
-#
-# cat = Category("cat", "descr", [prod1])
-#
-# print(cat)
-# print(cat.name)
-#
-# cat.add_product(prod2)
-#
-# print(cat)
-# print(cat.products)
+    return all_categories
