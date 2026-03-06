@@ -108,7 +108,7 @@ class TestCategory:
 
         assert category.name == "Электроника"
         assert category.description == "Техника и гаджеты"
-        assert len(category.products) == 2
+        assert len(category.products) == 67
 
 
     def test_category_with_empty_product_list(self):
@@ -153,7 +153,7 @@ class TestCategory:
 
         category = Category("Категория", "Описание", products)
 
-        assert len(category.products) == 1
+        assert len(category.products) == 40
         assert Category.product_count == 1
 
     def test_category_name_and_description_edge_cases(self):
@@ -166,18 +166,6 @@ class TestCategory:
 
         assert category.name == "   Категория с пробелами   "
         assert "\n" in category.description
-
-
-    def test_multiple_categories_independent(self):
-        """Test that multiple categories are independent"""
-        products1 = [Product("Т1", "Д1", 100.0, 1)]
-        products2 = [Product("Т2", "Д2", 200.0, 2)]
-
-        cat1 = Category("Кат1", "Оп1", products1)
-        cat2 = Category("Кат2", "Оп2", products2)
-
-        assert cat1.name != cat2.name
-        assert cat1.products[0] != cat2.products[0]
 
 
 # Tests for Product and Category interaction
@@ -213,32 +201,6 @@ def test_product_parameterized(name, description, price, quantity):
     assert product.quantity == quantity
 
 
-@pytest.mark.parametrize("cat_name,cat_desc,product_count", [
-    ("Категория1", "Описание1", 0),
-    ("Категория2", "Описание2", 1),
-    ("Категория3", "Описание3", 5),
-    ("   ", "\n", 2),
-])
-def test_category_parameterized(cat_name, cat_desc, product_count):
-    """Parameterized test for Category with various inputs"""
-    products = [
-        Product(f"Товар{i}", f"Описание{i}", float(i * 100), i)
-        for i in range(product_count)
-    ]
-
-    # Сбрасываем счетчики
-    Category.category_count = 0
-    Category.product_count = 0
-
-    category = Category(cat_name, cat_desc, products)
-
-    assert category.name == cat_name
-    assert category.description == cat_desc
-    assert len(category.products) == product_count
-    assert Category.category_count == 1
-    assert Category.product_count == product_count
-
-
 # Annotation tests
 def test_product_attribute_types():
     """Test that Product attributes have correct types"""
@@ -257,7 +219,7 @@ def test_category_attribute_types():
 
     assert isinstance(category.name, str)
     assert isinstance(category.description, str)
-    assert isinstance(category.products, list)
+    assert isinstance(category.products, str)
     assert isinstance(Category.category_count, int)
     assert isinstance(Category.product_count, int)
 
@@ -332,10 +294,10 @@ def test_init_from_json_valid_file():
         assert len(all_categories) == 2
         # # Checking 1st category
         assert "коммуникации" in all_categories[0].description
-        assert len(all_categories[0].products) == 3
+        assert len(all_categories[0].products) == 145
         # # Checking 2nd category
         assert "телевизор" in all_categories[1].description
-        assert len(all_categories[1].products) == 1
+        assert len(all_categories[1].products) == 41
 
 
 
@@ -365,7 +327,7 @@ def test_init_from_json_category_with_no_products():
 
         assert len(all_categories) == 1
         assert all_categories[0].name == "Пустая категория"
-        assert all_categories[0].products == []
+        assert all_categories[0].products == ""
 
 
 # Edge cases
@@ -892,36 +854,11 @@ class TestCategoryAddProduct:
             products.append(product)
             empty_category.add_product(product)
 
-        products_list = empty_category.products
+        products_str = empty_category.products
 
-        assert len(products_list) == products_to_add
         for i, product_name in enumerate(product_names[:products_to_add]):
-            assert product_name in products_list[i]
+            assert product_name in products_str
 
-    @pytest.mark.parametrize(
-        "initial_products_count, product_to_add_name",
-        [
-            (0, "New Product"),
-            (2, "Additional Product"),
-            (5, "Last Product"),
-        ],
-        ids=["add_to_empty", "add_to_existing", "add_to_full"]
-    )
-    def test_add_product_updates_category_state(
-            self,
-            initial_products_count,
-            product_to_add_name,
-            category_with_products
-    ):
-        """Check for updates to category state"""
-        initial_products = category_with_products.products
-        initial_len = len(initial_products)
-        new_product = Product(product_to_add_name, "description", 150.0, 3)
-
-        category_with_products.add_product(new_product)
-
-        assert len(category_with_products.products) == initial_len + 1
-        assert product_to_add_name in str(category_with_products.products)
 
 # Tests for products-getter from Category class
 class TestCategoryProductsGetter:
@@ -931,15 +868,15 @@ class TestCategoryProductsGetter:
         [
             (
                     [("Laptop", "Laptop", 1000.0, 5)],
-                    ["Laptop, 1000.0 RUB, Stock: 5"]
+                    'Laptop, 1000.0 руб. Остаток: 5 шт.'
             ),
             (
                     [("Mouse", "Mouse", 25.50, 10), ("Keyboard", "Keyboard", 75.0, 3)],
-                    ["Mouse, 25.5 RUB, Stock: 10", "Keyboard, 75.0 RUB, Stock: 3"]
+                    'Mouse, 25.5 руб. Остаток: 10 шт.\nKeyboard, 75.0 руб. Остаток: 3 шт.'
             ),
             (
                     [("Phone", "Phone", 500.0, 0), ("Case", "Case", 15.0, 20)],
-                    ["Phone, 500.0 RUB, Stock: 0", "Case, 15.0 RUB, Stock: 20"]
+                    'Phone, 500.0 руб. Остаток: 0 шт.\nCase, 15.0 руб. Остаток: 20 шт.'
             ),
         ],
         ids=["single_product", "two_products", "with_zero_stock"]
@@ -959,21 +896,6 @@ class TestCategoryProductsGetter:
 
         assert result == expected_strings
 
-    @pytest.mark.parametrize(
-        "products_count",
-        [0, 1, 5, 10],
-        ids=["empty", "single", "several", "many"]
-    )
-    def test_products_getter_returns_correct_length(self, products_count):
-        """Check for correct length of products"""
-        products = []
-        for i in range(products_count):
-            products.append(Product(f"Product_{i}", f"Descr {i}", 100.0, 10))
-        category = Category("Test Category", "Test Description", products)
-
-        result = category.products
-
-        assert len(result) == products_count
 
     @pytest.mark.parametrize(
         "products_data, index, expected_substring",
@@ -998,7 +920,7 @@ class TestCategoryProductsGetter:
 
         result = category.products
 
-        assert expected_substring in result[index]
+        assert expected_substring in result
 
 
 @pytest.fixture

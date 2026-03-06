@@ -82,14 +82,15 @@ class Category:
         Category.product_count += 1
 
     @property
-    def products(self) -> list[str]:
+    def products(self) -> str:
         """Getter for list of products in category"""
 
-        products = []
-        for product in self.__products:
-            products.append(f"{product.name}, {product.price} RUB, Stock: {product.quantity}")
+        products_string = ""
 
-        return products
+        for product in self.__products:
+            products_string += f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт.\n"
+
+        return products_string.strip()
 
 
 def init_from_json(json_file: str) -> list[Category]:
