@@ -222,6 +222,7 @@ def test_category_attribute_types():
     assert isinstance(category.products, str)
     assert isinstance(Category.category_count, int)
     assert isinstance(Category.product_count, int)
+    assert category.name in str(category)
 
 
 # Test for case when product is changed, but main counter does not change
