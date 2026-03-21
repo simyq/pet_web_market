@@ -997,7 +997,6 @@ class TestProductAddMethod:
         with pytest.raises(AttributeError):
             result = product + product
 
-
     def test_add_products_wrong_type_invalid(self):
         """Invalid case: adding Product with non-Product type"""
         product = Product("Product", "Description", 100.0, 5)
@@ -1010,3 +1009,48 @@ class TestProductAddMethod:
 
         with pytest.raises(AttributeError):
             result = product + None
+
+
+class TestProductStrMethod:
+    """Tests for __str__ method of Product class"""
+
+    def test_str_product_valid(self):
+        """Valid case: product string representation"""
+        product = Product("Product 1", "Description 1", 100.0, 5)
+        result = str(product)
+        assert result == f"Product 1, 100.0 руб. Остаток: 5 шт."
+
+    def test_str_product_edge(self):
+        """Edge case: product string representation"""
+
+        product = Product(None, None, None, None)
+        assert str(product) == 'None, None руб. Остаток: None шт.'
+
+    def test_str_product_invalid(self):
+        """Invalid case: product string representation"""
+        with pytest.raises(TypeError):
+            product = Product("Description 1", 100.0, 5)
+
+
+class TestCategoryStrMethod:
+    """Tests for __str__ method of Category class"""
+
+    def test_str_category_valid(self):
+        """Valid case: category string representation"""
+
+        category = Category("Test Category", "Test Description", [])
+        result = str(category)
+        assert result == 'Test Category, количество продуктов: 0 шт.'
+
+    def test_str_category_edge(self):
+        """Edge case: category string representation"""
+
+        category = Category(None, "Test Description", [])
+        result = str(category)
+        assert result == 'None, количество продуктов: 0 шт.'
+
+    def test_str_category_invalid(self):
+        """Invalid case: category string representation"""
+
+        with pytest.raises(TypeError):
+            category = Category("Test Description", 100.0, 5)

@@ -21,7 +21,7 @@ class Product:
 
     def __str__(self) -> str:
         """Return string representation of product"""
-        return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт.\n"
+        return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт."
 
     def __add__(self, other: "Product") -> float:
         """Return sum of product's price"""
@@ -89,7 +89,8 @@ class Category:
 
     def __str__(self) -> str:
         """Return string representation of category"""
-        return f"{self.name}, количество продуктов: {Category.product_count} шт."
+
+        return f"{self.name}, количество продуктов: {sum(prod.quantity for prod in self.__products)} шт."
 
     def add_product(self, product: Product) -> None:
         """Add product to category"""
@@ -104,7 +105,7 @@ class Category:
         products_string = ""
 
         for product in self.__products:
-            products_string += str(product)
+            products_string += f"{str(product)}\n"
 
         return products_string.strip()
 
