@@ -1,7 +1,7 @@
 """Module with two main classes (Product and Category)"""
 
 import json
-from typing import Union
+from typing import Any, Union
 
 
 class Product:
@@ -28,6 +28,9 @@ class Product:
 
         if self is other:
             raise AttributeError("Cannot add product to itself")
+
+        elif type(other) != type(self):
+            raise TypeError("Cannot add products from different classes")
 
         return self.__price * self.quantity + other.__price * other.quantity
 
@@ -92,8 +95,11 @@ class Category:
 
         return f"{self.name}, количество продуктов: {sum(prod.quantity for prod in self.__products)} шт."
 
-    def add_product(self, product: Product) -> None:
+    def add_product(self, product: Any) -> None:
         """Add product to category"""
+
+        if not isinstance(product, Product) or not issubclass(type(product), Product):
+            raise TypeError("Product must be of type Product or its subclass")
 
         self.__products.append(product)
         Category.product_count += 1
