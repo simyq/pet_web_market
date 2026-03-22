@@ -19,6 +19,18 @@ class Product:
         self.quantity = quantity
         Product.__products_dict[name] = self
 
+    def __str__(self) -> str:
+        """Return string representation of product"""
+        return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт."
+
+    def __add__(self, other: "Product") -> float:
+        """Return sum of product's price"""
+
+        if self is other:
+            raise AttributeError("Cannot add product to itself")
+
+        return self.__price * self.quantity + other.__price * other.quantity
+
     @property
     def price(self) -> Union[float, int]:
         return self.__price
@@ -75,6 +87,11 @@ class Category:
         Category.category_count += 1
         Category.product_count += len(products)
 
+    def __str__(self) -> str:
+        """Return string representation of category"""
+
+        return f"{self.name}, количество продуктов: {sum(prod.quantity for prod in self.__products)} шт."
+
     def add_product(self, product: Product) -> None:
         """Add product to category"""
 
@@ -88,7 +105,7 @@ class Category:
         products_string = ""
 
         for product in self.__products:
-            products_string += f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт.\n"
+            products_string += f"{str(product)}\n"
 
         return products_string.strip()
 

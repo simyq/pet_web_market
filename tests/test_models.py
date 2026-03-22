@@ -222,6 +222,7 @@ def test_category_attribute_types():
     assert isinstance(category.products, str)
     assert isinstance(Category.category_count, int)
     assert isinstance(Category.product_count, int)
+    assert category.name in str(category)
 
 
 # Test for case when product is changed, but main counter does not change
@@ -938,3 +939,118 @@ def category_with_products():
         Product("Product 3", "Description 3", 300.0, 15)
     ]
     return Category("Test Category", "Test Description", products)
+
+
+class TestProductAddMethod:
+    """Tests for __add__ method of Product class"""
+
+    def test_add_products_valid(self):
+        """Valid case: sum of two products with positive quantities and prices"""
+        product1 = Product("Product 1", "Description 1", 100.0, 5)
+        product2 = Product("Product 2", "Description 2", 200.0, 3)
+
+        result = product1 + product2
+
+        assert result == 1100.0
+        assert isinstance(result, float)
+
+    def test_add_products_with_zero_quantity(self):
+        """Edge case: one product has zero quantity"""
+        product1 = Product("Product 1", "Description 1", 100.0, 0)
+        product2 = Product("Product 2", "Description 2", 200.0, 3)
+
+        result = product1 + product2
+
+        assert result == 600.0
+
+    def test_add_products_with_zero_price(self):
+        """Edge case: one product has zero price"""
+        product1 = Product("Product 1", "Description 1", 0.0, 5)
+        product2 = Product("Product 2", "Description 2", 200.0, 3)
+
+        result = product1 + product2
+
+        assert result == 600.0
+
+    def test_add_products_with_negative_values(self):
+        """Invalid/Edge case: products with negative prices or quantities"""
+        product1 = Product("Product 1", "Description 1", -100.0, 5)
+        product2 = Product("Product 2", "Description 2", 200.0, 3)
+
+        result = product1 + product2
+
+        assert result == 100.0
+
+    def test_add_products_with_float_values(self):
+        """Valid case: products with float prices and quantities"""
+        product1 = Product("Product 1", "Description 1", 99.99, 2)
+        product2 = Product("Product 2", "Description 2", 149.99, 3)
+
+        result = product1 + product2
+
+        assert result == 649.95
+
+    def test_add_product_with_itself(self):
+        """Edge case: adding product to itself"""
+        product = Product("Product", "Description", 100.0, 5)
+
+        with pytest.raises(AttributeError):
+            result = product + product
+
+    def test_add_products_wrong_type_invalid(self):
+        """Invalid case: adding Product with non-Product type"""
+        product = Product("Product", "Description", 100.0, 5)
+
+        with pytest.raises(AttributeError):
+            result = product + 100
+
+        with pytest.raises(AttributeError):
+            result = product + "string"
+
+        with pytest.raises(AttributeError):
+            result = product + None
+
+
+class TestProductStrMethod:
+    """Tests for __str__ method of Product class"""
+
+    def test_str_product_valid(self):
+        """Valid case: product string representation"""
+        product = Product("Product 1", "Description 1", 100.0, 5)
+        result = str(product)
+        assert result == f"Product 1, 100.0 руб. Остаток: 5 шт."
+
+    def test_str_product_edge(self):
+        """Edge case: product string representation"""
+
+        product = Product(None, None, None, None)
+        assert str(product) == 'None, None руб. Остаток: None шт.'
+
+    def test_str_product_invalid(self):
+        """Invalid case: product string representation"""
+        with pytest.raises(TypeError):
+            product = Product("Description 1", 100.0, 5)
+
+
+class TestCategoryStrMethod:
+    """Tests for __str__ method of Category class"""
+
+    def test_str_category_valid(self):
+        """Valid case: category string representation"""
+
+        category = Category("Test Category", "Test Description", [])
+        result = str(category)
+        assert result == 'Test Category, количество продуктов: 0 шт.'
+
+    def test_str_category_edge(self):
+        """Edge case: category string representation"""
+
+        category = Category(None, "Test Description", [])
+        result = str(category)
+        assert result == 'None, количество продуктов: 0 шт.'
+
+    def test_str_category_invalid(self):
+        """Invalid case: category string representation"""
+
+        with pytest.raises(TypeError):
+            category = Category("Test Description", 100.0, 5)
