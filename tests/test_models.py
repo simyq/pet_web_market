@@ -1001,13 +1001,13 @@ class TestProductAddMethod:
         """Invalid case: adding Product with non-Product type"""
         product = Product("Product", "Description", 100.0, 5)
 
-        with pytest.raises(AttributeError):
+        with pytest.raises(TypeError):
             result = product + 100
 
-        with pytest.raises(AttributeError):
+        with pytest.raises(TypeError):
             result = product + "string"
 
-        with pytest.raises(AttributeError):
+        with pytest.raises(TypeError):
             result = product + None
 
 

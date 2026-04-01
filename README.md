@@ -1,5 +1,5 @@
 # Web market
-Pet project. Work in progress. Current test coverage 100%.
+Pet project. Work in progress. Current test coverage 99%.
 
 ## Content (main modules)
 
@@ -7,10 +7,10 @@ Pet project. Work in progress. Current test coverage 100%.
 
 ### [Src](src/) — directory for modules
 - [Models](src/models.py) — contains main classes (Products, Categories) for building logic in web market 
-
+- [Products](src/products.py) — Using the main Products class by building subclasses. Since this is just a pet project, there is no need to create many product classes.
 ### [Tests](tests/) — directory for tests
 - [test_models](tests/test_models.py)
-
+- [test_products](tests/test_products.py)
 ### [Data](data/) — directory for data files
 
 ## Installation:
