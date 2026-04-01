@@ -3,7 +3,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from src.models import Category, Product, init_from_json
+from src.models import Category, Order, Product, init_from_json
 
 
 # Tests for Product class
@@ -525,7 +525,7 @@ class TestPriceSetter:
         product.price = new_price
         assert product.price == new_price
         captured = capsys.readouterr()
-        assert captured.out == ""  # No messages
+        assert captured.out == f"Product('Test', 'Description', {initial_price}, 5)\n"
 
     @pytest.mark.parametrize("initial_price,new_price", [
         (100.0, 50.0),  # Price decrease without message
@@ -1032,6 +1032,27 @@ class TestProductStrMethod:
             product = Product("Description 1", 100.0, 5)
 
 
+class TestProductReprMethod:
+    """Tests for __repr__ method of Product class"""
+
+    def test_repr_product_valid(self):
+        """Valid case: product string representation"""
+        product = Product("Product 1", "Description 1", 100.0, 5)
+        result = repr(product)
+        assert result == "Product('Product 1', 'Description 1', 100.0, 5)"
+
+    def test_repr_product_edge(self):
+        """Edge case: product string representation"""
+
+        product = Product(None, None, None, None)
+        assert repr(product) == 'Product(None, None, None, None)'
+
+    def test_repr_product_invalid(self):
+        """Invalid case: product string representation"""
+        with pytest.raises(TypeError):
+            product = Product("Description 1", 100.0, 5)
+
+
 class TestCategoryStrMethod:
     """Tests for __str__ method of Category class"""
 
@@ -1054,3 +1075,129 @@ class TestCategoryStrMethod:
 
         with pytest.raises(TypeError):
             category = Category("Test Description", 100.0, 5)
+
+
+class TestOrder:
+    """Tests for Order class"""
+
+    # Valid cases
+    def test_order_initialization(self):
+        """Test that Order initializes correctly with all attributes"""
+        order = Order("Test Product", 5, 1000.0)
+
+        assert order.name == "Test Product"
+        assert order.quantity == 5
+        assert order.price == 1000.0
+        assert order.order_id == 1  # First order gets ID 1
+
+    def test_order_str_representation(self):
+        """Test __str__ method of Order"""
+        order = Order("Laptop", 3, 150000.0)
+        expected = f"Order id: 2. Product name: Laptop. Quantity: 3 Total price: 150000.0."
+        assert str(order) == expected
+
+    def test_order_multiple_instances_increment_id(self):
+        """Test that order_id increments with each new order"""
+        order3 = Order("Product 3", 2, 100.0)
+        order4 = Order("Product 4", 1, 50.0)
+        order5 = Order("Product 5", 5, 200.0)
+
+        assert order3.order_id == 3
+        assert order4.order_id == 4
+        assert order5.order_id == 5
+
+    def test_order_with_different_data_types(self):
+        """Test Order with various data types"""
+        order = Order("123", 10, 99.99)
+
+        assert order.name == "123"
+        assert order.quantity == 10
+        assert order.price == 99.99
+
+    # Edge cases
+    def test_order_with_zero_quantity(self):
+        """Test Order with zero quantity"""
+        order = Order("Zero Product", 0, 100.0)
+
+        assert order.quantity == 0
+        assert order.price == 100.0
+
+    def test_order_with_zero_price(self):
+        """Test Order with zero price"""
+        order = Order("Free Product", 10, 0.0)
+
+        assert order.quantity == 10
+        assert order.price == 0.0
+
+    def test_order_with_negative_quantity(self):
+        """Test Order with negative quantity (edge case)"""
+        order = Order("Negative", -5, 100.0)
+
+        assert order.quantity == -5
+        assert order.price == 100.0
+
+    def test_order_with_negative_price(self):
+        """Test Order with negative price (edge case)"""
+        order = Order("Discounted", 10, -50.0)
+
+        assert order.quantity == 10
+        assert order.price == -50.0
+
+    def test_order_with_empty_string_name(self):
+        """Test Order with empty string as name"""
+        order = Order("", 5, 100.0)
+
+        assert order.name == ""
+        assert order.quantity == 5
+        assert order.price == 100.0
+
+    def test_order_with_special_characters_in_name(self):
+        """Test Order with special characters in name"""
+        order = Order("Product №123!@#", 5, 100.0)
+
+        assert order.name == "Product №123!@#"
+        assert order.quantity == 5
+
+    def test_order_with_float_quantity(self):
+        """Test Order with float quantity (edge case)"""
+        order = Order("Float Quantity", 5.5, 100.0)
+
+        assert order.quantity == 5.5
+        assert order.price == 100.0
+
+
+    # Invalid cases
+    def test_order_missing_required_arguments(self):
+        """Test that missing required arguments raise TypeError"""
+        with pytest.raises(TypeError):
+            Order("Test")  # Missing quantity and price
+
+    def test_order_with_none_name(self):
+        """Test Order with None as name"""
+        order = Order(None, 5, 100.0)
+
+        assert order.name is None
+        assert order.quantity == 5
+        assert order.price == 100.0
+
+    def test_order_with_string_price(self):
+        """Test Order with string price (should work but may cause issues)"""
+        order = Order("Test", 5, "100.0")
+
+        assert order.price == "100.0"  # No type conversion
+        assert order.quantity == 5
+
+    @pytest.mark.parametrize("name,quantity,price", [
+        ("", 0, 0),
+        (" ", 0, 0),
+        ("Test", 1, 1.0),
+        ("Test", 100, 1000.0),
+        ("Test", 999999, 999999.99),
+    ])
+    def test_order_parameterized(self, name, quantity, price):
+        """Parameterized test for Order with various valid inputs"""
+        order = Order(name, quantity, price)
+
+        assert order.name == name
+        assert order.quantity == quantity
+        assert order.price == price
