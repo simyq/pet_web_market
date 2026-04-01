@@ -1,16 +1,19 @@
 # Web market
-Pet project. Work in progress. Current test coverage 99%.
+Pet project. Work in progress. Current test coverage 90%.
 
 ## Content (main modules)
 
 ### [Main](main.py) — main module of the program
 
 ### [Src](src/) — directory for modules
+- [Base Models](src/base_models.py) — basic construction abstract classes for different models
 - [Models](src/models.py) — contains main classes (Products, Categories) for building logic in web market 
-- [Products](src/products.py) — Using the main Products class by building subclasses. Since this is just a pet project, there is no need to create many product classes.
+- [Products](src/products.py) — using the main Products class by building subclasses. Since this is just a pet project, there is no need to create many product classes.
+- [Mixins](src/mixins.py) — module for storing different mixin-classes, for example, for logging 
 ### [Tests](tests/) — directory for tests
 - [test_models](tests/test_models.py)
 - [test_products](tests/test_products.py)
+- [base_models](src/base_models.py)
 ### [Data](data/) — directory for data files
 
 ## Installation:
