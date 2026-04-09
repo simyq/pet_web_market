@@ -3,8 +3,11 @@
 import json
 from typing import Any, Union
 
+from src.base_models import BaseCategory, BaseProduct
+from src.mixins import MixinConsoleLog
 
-class Product:
+
+class Product(BaseProduct, MixinConsoleLog):
     """Class for making products"""
 
     __products_dict: dict = (
@@ -18,12 +21,13 @@ class Product:
         self.__price = price
         self.quantity = quantity
         Product.__products_dict[name] = self
+        MixinConsoleLog.__init__(self)
 
     def __str__(self) -> str:
         """Return string representation of product"""
         return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт."
 
-    def __add__(self, other: "Product") -> float:
+    def __add__(self: "Product", other: "Product") -> float:
         """Return sum of product's price"""
 
         if self is other:
@@ -33,6 +37,10 @@ class Product:
             raise TypeError("Cannot add products from different classes")
 
         return self.__price * self.quantity + other.__price * other.quantity
+
+    def __repr__(self) -> str:
+        """Return string representation of product"""
+        return f"{self.__class__.__name__}{self.name, self.description, self.__price, self.quantity}"
 
     @property
     def price(self) -> Union[float, int]:
@@ -75,7 +83,7 @@ If you are sure you want to reset the price to lower one, enter 'y', enter any o
             return cls(name, description, price, quantity)
 
 
-class Category:
+class Category(BaseCategory):
     """Class for making categories"""
 
     category_count = 0
@@ -114,6 +122,27 @@ class Category:
             products_string += f"{str(product)}\n"
 
         return products_string.strip()
+
+
+class Order(BaseCategory):
+    """Class for making orders"""
+
+    order_counter = 0
+
+    def __init__(self, name: str, quantity: int, price: float) -> None:
+        """Initialization method"""
+        self.name = name
+        self.quantity = quantity
+        self.price = price
+        Order.order_counter += 1
+        self.order_id = Order.order_counter
+
+    def __str__(self) -> str:
+        """Return string representation of order"""
+
+        return "Order id: {}. Product name: {}. Quantity: {} Total price: {}.".format(
+            self.order_id, self.name, self.quantity, self.price
+        )
 
 
 def init_from_json(json_file: str) -> list[Category]:
