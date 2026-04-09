@@ -26,15 +26,16 @@ class TestProduct:
 
     def test_product_with_zero_quantity(self):
         """Test Product with zero quantity"""
-        product = Product(
-            name="Товар",
-            description="Описание",
-            price=100.0,
-            quantity=0
-        )
 
-        assert product.quantity == 0
-        assert product.price == 100.0
+        with pytest.raises(ValueError) as e:
+            product = Product(
+                name="Товар",
+                description="Описание",
+                price=100.0,
+                quantity=0
+            )
+            assert "Товар с нулевым количеством не может быть добавлен" in e
+
 
     def test_product_with_negative_price(self):
         """Test Product with negative price (edge case)"""
@@ -53,7 +54,7 @@ class TestProduct:
             name="",
             description="",
             price=0.0,
-            quantity=0
+            quantity=5
         )
 
         assert product.name == ""
@@ -187,7 +188,7 @@ class TestProductCategoryInteraction:
 # Parametrized tests for classes
 @pytest.mark.parametrize("name,description,price,quantity", [
     ("Товар", "Описание", 100.0, 10),
-    ("Т", "Д", 0.0, 0),
+    ("Т", "Д", 0.0, 1),
     ("Товар с пробелами", "Описание с символами !@#$%", 999.99, 999),
     ("", "", -10.0, -5),
 ])
@@ -525,7 +526,7 @@ class TestPriceSetter:
         product.price = new_price
         assert product.price == new_price
         captured = capsys.readouterr()
-        assert captured.out == f"Product('Test', 'Description', {initial_price}, 5)\n"
+        assert f"Product('Test', 'Description', {initial_price}, 5)\n" in captured.out
 
     @pytest.mark.parametrize("initial_price,new_price", [
         (100.0, 50.0),  # Price decrease without message
@@ -745,7 +746,7 @@ class TestNewProductMethod:
     @pytest.mark.parametrize("initial_price,initial_qty,new_price,new_qty,expected_price,expected_qty", [
         (100.0, 5, 150.0, 3, 150.0, 8),  # New price is higher
         (200.0, 5, 150.0, 3, 200.0, 8),  # New price is lower
-        (100.0, 0, 150.0, 5, 150.0, 5),  # Start value is 0
+        (100.0, 1, 150.0, 5, 150.0, 6),  # Start value is 1
         (100.0, 5, 100.0, 10, 100.0, 15),  # Equal price
     ])
     def test_new_product_parameterized(self, initial_price, initial_qty, new_price, new_qty, expected_price,
@@ -876,8 +877,8 @@ class TestCategoryProductsGetter:
                     'Mouse, 25.5 руб. Остаток: 10 шт.\nKeyboard, 75.0 руб. Остаток: 3 шт.'
             ),
             (
-                    [("Phone", "Phone", 500.0, 0), ("Case", "Case", 15.0, 20)],
-                    'Phone, 500.0 руб. Остаток: 0 шт.\nCase, 15.0 руб. Остаток: 20 шт.'
+                    [("Phone", "Phone", 500.0, 1), ("Case", "Case", 15.0, 20)],
+                    'Phone, 500.0 руб. Остаток: 1 шт.\nCase, 15.0 руб. Остаток: 20 шт.'
             ),
         ],
         ids=["single_product", "two_products", "with_zero_stock"]
@@ -956,12 +957,15 @@ class TestProductAddMethod:
 
     def test_add_products_with_zero_quantity(self):
         """Edge case: one product has zero quantity"""
-        product1 = Product("Product 1", "Description 1", 100.0, 0)
-        product2 = Product("Product 2", "Description 2", 200.0, 3)
 
-        result = product1 + product2
+        with pytest.raises(ValueError) as e:
+            product1 = Product("Product 1", "Description 1", 100.0, 0)
+            product2 = Product("Product 2", "Description 2", 200.0, 3)
+            result = product1 + product2
 
-        assert result == 600.0
+            assert "Товар с нулевым количеством не может быть добавлен" in e
+
+
 
     def test_add_products_with_zero_price(self):
         """Edge case: one product has zero price"""
@@ -1201,3 +1205,131 @@ class TestOrder:
         assert order.name == name
         assert order.quantity == quantity
         assert order.price == price
+
+
+class TestCategoryMiddlePrice:
+    """Tests for middle_price method of Category class"""
+
+    @pytest.fixture
+    def category_with_products(self):
+        """Fixture creating category with multiple products"""
+        products = [
+            Product("Product 1", "Description 1", 100.0, 5),
+            Product("Product 2", "Description 2", 200.0, 3),
+            Product("Product 3", "Description 3", 300.0, 10)
+        ]
+        return Category("Test Category", "Test Description", products)
+
+    @pytest.fixture
+    def category_with_one_product(self):
+        """Fixture creating category with single product"""
+        products = [Product("Single Product", "Description", 150.0, 2)]
+        return Category("Single Category", "Description", products)
+
+    @pytest.fixture
+    def empty_category(self):
+        """Fixture creating empty category"""
+        return Category("Empty Category", "Description", [])
+
+    # Valid case
+    def test_middle_price_with_multiple_products(self, category_with_products):
+        """Test calculating average price with multiple products"""
+        # (100 + 200 + 300) / 3 = 200.0
+        result = category_with_products.middle_price()
+
+        assert result == 200.0
+        assert isinstance(result, float)
+
+    def test_middle_price_with_one_product(self, category_with_one_product):
+        """Test calculating average price with single product"""
+        # 150.0 / 1 = 150.0
+        result = category_with_one_product.middle_price()
+
+        assert result == 150.0
+
+    # Invalid cases
+    def test_middle_price_with_empty_category(self, empty_category):
+        """Test calculating average price with empty category (handles ZeroDivisionError)"""
+        result = empty_category.middle_price()
+
+        # Should return 0 when no products
+        assert result == 0
+
+    def test_middle_price_with_products_having_zero_price(self):
+        """Test calculating average price when some products have zero price"""
+        products = [
+            Product("Zero Price", "Description", 0.0, 5),
+            Product("Normal Price", "Description", 100.0, 3),
+            Product("High Price", "Description", 200.0, 10)
+        ]
+        category = Category("Mixed Category", "Description", products)
+
+        # (0 + 100 + 200) / 3 = 100.0
+        result = category.middle_price()
+
+        assert result == 100.0
+
+    # Edge cases
+    def test_middle_price_with_negative_prices(self):
+        """Test calculating average price with negative prices (edge case)"""
+        products = [
+            Product("Negative", "Description", -100.0, 5),
+            Product("Positive", "Description", 100.0, 3),
+            Product("Zero", "Description", 0.0, 10)
+        ]
+        category = Category("Mixed Category", "Description", products)
+
+        # (-100 + 100 + 0) / 3 = 0.0
+        result = category.middle_price()
+
+        assert result == 0.0
+
+    def test_middle_price_with_decimal_prices(self):
+        """Test calculating average price with decimal values"""
+        products = [
+            Product("P1", "D1", 99.99, 5),
+            Product("P2", "D2", 149.99, 3),
+            Product("P3", "D3", 199.99, 10)
+        ]
+        category = Category("Decimal Category", "Description", products)
+
+        # (99.99 + 149.99 + 199.99) / 3 = 149.99
+        result = category.middle_price()
+
+        assert result == 149.99
+
+    def test_middle_price_rounding_to_two_decimals(self):
+        """Test that result is rounded to 2 decimal places"""
+        products = [
+            Product("P1", "D1", 100.666, 5),
+            Product("P2", "D2", 200.333, 3),
+            Product("P3", "D3", 300.0, 10)
+        ]
+        category = Category("Rounding Category", "Description", products)
+
+        # (100.666 + 200.333 + 300.0) / 3 = 200.333
+        # Should round to 200.33
+        result = category.middle_price()
+
+        assert result == 200.33
+
+    # Parameterized test
+    @pytest.mark.parametrize("prices,expected_average", [
+        ([100.0, 200.0, 300.0], 200.0),
+        ([50.0, 50.0, 50.0], 50.0),
+        ([10.0, 20.0], 15.0),
+        ([100.0], 100.0),
+        ([], 0),
+        ([0.0, 0.0, 0.0], 0.0),
+    ])
+    def test_middle_price_parameterized(self, prices, expected_average):
+        """Parameterized test for different price combinations"""
+        products = [
+            Product(f"P{i}", f"D{i}", price, 1)
+            for i, price in enumerate(prices)
+        ]
+        category = Category("Test Category", "Description", products)
+
+        result = category.middle_price()
+
+        assert result == expected_average

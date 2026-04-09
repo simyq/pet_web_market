@@ -3,7 +3,7 @@
 import json
 from typing import Any, Union
 
-from src.base_models import BaseCategory, BaseProduct
+from src.base_models import BaseCategory, BaseProduct, ZeroQuantityAddError
 from src.mixins import MixinConsoleLog
 
 
@@ -22,6 +22,8 @@ class Product(BaseProduct, MixinConsoleLog):
         self.quantity = quantity
         Product.__products_dict[name] = self
         MixinConsoleLog.__init__(self)
+
+        ZeroQuantityAddError(quantity)
 
     def __str__(self) -> str:
         """Return string representation of product"""
@@ -122,6 +124,17 @@ class Category(BaseCategory):
             products_string += f"{str(product)}\n"
 
         return products_string.strip()
+
+    def middle_price(self) -> Union[float, int]:
+        """Return middle price of category"""
+        avg_price = 0
+
+        try:
+            avg_price = sum(prod.price for prod in self.__products) / len(self.__products)
+        except ZeroDivisionError:
+            pass
+        finally:
+            return round(avg_price, 2)
 
 
 class Order(BaseCategory):
