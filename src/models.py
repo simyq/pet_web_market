@@ -3,7 +3,7 @@
 import json
 from typing import Any, Union
 
-from src.base_models import BaseCategory, BaseProduct, ZeroQuantityAddError
+from src.base_models import BaseCategory, BaseProduct
 from src.mixins import MixinConsoleLog
 
 
@@ -19,11 +19,12 @@ class Product(BaseProduct, MixinConsoleLog):
         self.name = name
         self.description = description
         self.__price = price
-        self.quantity = quantity
+        if quantity:
+            self.quantity = quantity
+        else:
+            raise ValueError("Товар с нулевым количеством не может быть добавлен")
         Product.__products_dict[name] = self
         MixinConsoleLog.__init__(self)
-
-        ZeroQuantityAddError(quantity)
 
     def __str__(self) -> str:
         """Return string representation of product"""

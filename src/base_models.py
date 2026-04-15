@@ -49,17 +49,3 @@ class BaseCategory(ABC):
     @abstractmethod
     def __str__(self) -> str:
         pass
-
-
-class ZeroQuantityAddError(ValueError):
-    """Raised when a quantity is zero"""
-
-    def __init__(self, quantity) -> None:
-        """Raised when a quantity is zero"""
-        self.quantity = quantity
-
-        if quantity != 0:
-            print("Товар добавлен")
-            pass
-        else:
-            raise ValueError("Товар с нулевым количеством не может быть добавлен")

@@ -1025,10 +1025,10 @@ class TestProductStrMethod:
         assert result == f"Product 1, 100.0 руб. Остаток: 5 шт."
 
     def test_str_product_edge(self):
-        """Edge case: product string representation"""
-
-        product = Product(None, None, None, None)
-        assert str(product) == 'None, None руб. Остаток: None шт.'
+        """Edge case: product string representation with zero quantity"""
+        with pytest.raises(ValueError) as e:
+            product = Product(None, None, None, 0)
+            assert "Товар с нулевым количеством не может быть добавлен" in e
 
     def test_str_product_invalid(self):
         """Invalid case: product string representation"""
@@ -1046,10 +1046,10 @@ class TestProductReprMethod:
         assert result == "Product('Product 1', 'Description 1', 100.0, 5)"
 
     def test_repr_product_edge(self):
-        """Edge case: product string representation"""
-
-        product = Product(None, None, None, None)
-        assert repr(product) == 'Product(None, None, None, None)'
+        """Edge case: product string representation with zero quantity"""
+        with pytest.raises(ValueError) as e:
+            product = Product(None, None, None, 0)
+            assert "Товар с нулевым количеством не может быть добавлен" in e
 
     def test_repr_product_invalid(self):
         """Invalid case: product string representation"""
