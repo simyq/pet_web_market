@@ -19,7 +19,10 @@ class Product(BaseProduct, MixinConsoleLog):
         self.name = name
         self.description = description
         self.__price = price
-        self.quantity = quantity
+        if quantity:
+            self.quantity = quantity
+        else:
+            raise ValueError("Товар с нулевым количеством не может быть добавлен")
         Product.__products_dict[name] = self
         MixinConsoleLog.__init__(self)
 
@@ -122,6 +125,17 @@ class Category(BaseCategory):
             products_string += f"{str(product)}\n"
 
         return products_string.strip()
+
+    def middle_price(self) -> Union[float, int]:
+        """Return middle price of category"""
+        avg_price = 0
+
+        try:
+            avg_price = sum(prod.price for prod in self.__products) / len(self.__products)
+        except ZeroDivisionError:
+            pass
+        finally:
+            return round(avg_price, 2)
 
 
 class Order(BaseCategory):

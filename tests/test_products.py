@@ -126,7 +126,8 @@ class TestSmartphones:
 
     def test_smartphone_zero_quantity(self):
         """Test Smartphone with zero quantity"""
-        phone = Smartphone(
+        with pytest.raises(ValueError) as e:
+            phone = Smartphone(
             name="Out of stock",
             description="No stock",
             price=100.0,
@@ -136,8 +137,7 @@ class TestSmartphones:
             memory=128,
             color="Red"
         )
-        assert phone.quantity == 0
-        assert phone.price == 100.0
+            assert "Товар с нулевым количеством не может быть добавлен" in e
 
     def test_smartphone_add_itself(self, smartphone1):
         """Test that adding smartphone to itself raises AttributeError"""
@@ -315,7 +315,8 @@ class TestLawnGrass:
 
     def test_lawn_grass_zero_quantity(self):
         """Test LawnGrass with zero quantity"""
-        grass = LawnGrass(
+        with pytest.raises(ValueError) as e:
+            grass = LawnGrass(
             name="Out of stock",
             description="No stock",
             price=100.0,
@@ -324,8 +325,7 @@ class TestLawnGrass:
             germination_period="7 days",
             color="Green"
         )
-        assert grass.quantity == 0
-        assert grass.price == 100.0
+            assert "Товар с нулевым количеством не может быть добавлен" in e
 
     def test_lawn_grass_add_itself(self, grass1):
         """Test that adding lawn grass to itself raises AttributeError"""
